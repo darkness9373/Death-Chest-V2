@@ -1,0 +1,76 @@
+{
+    "format_version": "1.21.0",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "dc:death_chest_storage",
+            "is_spawnable": false,
+            "is_summonable": true,
+            "is_experimental": false
+        },
+        "component_groups": {
+            "locked": {
+                "minecraft:collision_box": {
+                    "width": 0.001,
+                    "height": 0.001
+                }
+            },
+            "unlocked": {
+                "minecraft:collision_box": {
+                    "width": 1.0,
+                    "height": 1.0
+                }
+            }
+        },
+        "components": {
+            "minecraft:type_family": {
+                "family": ["death_chest_storage", "inanimate"]
+            },
+            "minecraft:health": {
+                "value": 2000,
+                "max": 2000
+            },
+            "minecraft:collision_box": {
+                "width": 0.001,
+                "height": 0.001
+            },
+            "minecraft:physics": {
+                "has_gravity": false,
+                "has_collision": false
+            },
+            "minecraft:pushable": {
+                "is_pushable": false,
+                "is_pushable_by_piston": false
+            },
+            "minecraft:damage_sensor": {
+                "triggers": [
+                    {
+                        "cause": "all",
+                        "deals_damage": "no"
+                    }
+                ]
+            },
+            "minecraft:movement": {
+                "value": 0
+            },
+            "minecraft:inventory": {
+                "container_type": "inventory",
+                "inventory_size": 54,
+                "can_be_siphoned_from": false
+            },
+            "minecraft:nameable": {
+                "allow_name_tag_renaming": false
+            },
+            "minecraft:is_hidden_when_invisible": {}
+        },
+        "events": {
+            "unlock_chest": {
+                "remove": {
+                    "component_groups": ["locked"]
+                },
+                "add": {
+                    "component_groups": ["unlocked"]
+                }
+            }
+        }
+    }
+}

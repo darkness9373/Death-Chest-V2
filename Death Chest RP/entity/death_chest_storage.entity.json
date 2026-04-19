@@ -1,0 +1,18 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:client_entity": {
+        "description": {
+            "identifier": "dc:death_chest_storage",
+            "materials": {
+                "default": "entity_alphatest"
+            },
+            "geometry": {
+                "default": "geometry.death_chest_storage"
+            },
+            "spawn_egg": {
+                "base_color": "#000000",
+                "overlay_color": "#FFD700"
+            }
+        }
+    }
+}

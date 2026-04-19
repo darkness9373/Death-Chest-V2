@@ -1,0 +1,22 @@
+{
+    "format_version": "1.21.0",
+    "minecraft:item": {
+        "description": {
+            "identifier": "dc:death_chest_key",
+            "menu_category": {
+                "category": "equipment"
+            }
+        },
+        "components": {
+            "minecraft:display_name": {
+                "value": "Death Chest Key"
+            },
+            "minecraft:max_stack_size": 1,
+            "minecraft:icon": "death_chest_key",
+            "minecraft:hand_equipped": false,
+            "minecraft:allow_off_hand": true,
+            "minecraft:should_despawn": false,
+            "minecraft:liquid_clipped": true
+        }
+    }
+}
