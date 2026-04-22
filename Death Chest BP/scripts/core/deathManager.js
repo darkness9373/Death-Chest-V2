@@ -16,7 +16,7 @@ world.afterEvents.entityDie.subscribe(data => {
                 time: Date.now(),
                 code: cd
             }
-            if (deathPos.y < -60) {
+            if (deathPos.y < -55) {
                 let spawn = null;
                 let dim = null;
                 const cpoint = player.getSpawnPoint();
@@ -73,5 +73,27 @@ function spawnEntityStorage(player, dimension, pos, data) {
     }
     const key = new ItemStack(ITEM_KEY_ID, 1);
     key.setLore([`ID : ${data.code}`, `Location : ${pos.x}, ${pos.y}, ${pos.z}`, `Dimension : ${dimension.id}`]);
+    key.setDynamicProperty('id', data.code);
     player.getComponent('inventory').container.addItem(key);
 }
+
+world.beforeEvents.playerInteractWithBlock.subscribe(data => {
+    const player = data.player;
+    const block = data.block;
+    const item = data.itemStack;
+    const entities = player.dimension.getEntities({
+        location: block.location,
+        type: ENTITY_STORAGE_ID,
+        maxDistance: 0.7
+    })
+    if (block.typeId !== 'minecraft:chest') return;
+    if (entities.length === 0) return;
+    if (!item || item.typeId !== ITEM_KEY_ID) return;
+    const entity = entities[0];
+    const entityData = JSON.parse(entity.getDynamicProperty('data')) ?? null;
+    if (!entityData) return;
+    const entityCode = entityData.code;
+    const itemCode = item.getDynamicProperty('id') ?? null;
+    if (entityCode !== itemCode) return;
+    entity.triggerEvent('unlock_chest');
+})
