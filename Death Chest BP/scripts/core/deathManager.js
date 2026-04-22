@@ -1,5 +1,5 @@
-import { BlockPermutation, Player, system, world } from '@minecraft/server';
-import { ENTITY_STORAGE_ID } from '../config';
+import { BlockPermutation, ItemStack, Player, system, world } from '@minecraft/server';
+import { ENTITY_STORAGE_ID, ITEM_KEY_ID } from '../config';
 import { findSafeLocation } from './findSafeLocation';
 import { generateUniqueCode } from './uniqueCode';
 
@@ -10,7 +10,7 @@ world.afterEvents.entityDie.subscribe(data => {
         const dimension = player.dimension;
         system.run(() => {
             const cd = generateUniqueCode(16);
-            const data = {
+            const store = {
                 owner: player.name,
                 expire: Date.now() + 1000 * 60 * 30,
                 time: Date.now(),
@@ -34,30 +34,29 @@ world.afterEvents.entityDie.subscribe(data => {
                     dim = cpoint.dimension
                 }
                 const safe = findSafeLocation(dim, spawn);
-                if (!safe) {
-                    spawnEntityStorage(dim, spawn, data);
-                    return;
-                }
-                spawnEntityStorage(dim, safe, data);
+                spawnEntityStorage(player, dim, safe ?? spawn, store);
                 return;
             }
             const safe = findSafeLocation(dimension, deathPos);
-            if (!safe) {
-                spawnEntityStorage(dimension, deathPos, data);
-                return;
-            }
-            spawnEntityStorage(dimension, safe, data);
+            spawnEntityStorage(player, dimension, safe ?? deathPos, store);
         })
     }
 })
 
 /**
  * 
+ * @param {import('@minecraft/server').Player} player
  * @param {import('@minecraft/server').Dimension} dimension 
  * @param {import('@minecraft/server').Vector3} pos 
  * @param {Object} data 
  */
-function spawnEntityStorage(dimension, pos, data) {
+function spawnEntityStorage(player, dimension, pos, data) {
+    const items = player.dimension.getEntities({
+        location: pos,
+        type: 'minecraft:item',
+        maxDistance: 6
+    })
+    if (items.length === 0) return;
     const block = dimension.getBlock(pos);
     block.setPermutation(BlockPermutation.resolve('minecraft:chest'));
     const entity = dimension.spawnEntity(ENTITY_STORAGE_ID, {
@@ -66,4 +65,13 @@ function spawnEntityStorage(dimension, pos, data) {
         z: pos.z + 0.5
     });
     entity.setDynamicProperty('data', JSON.stringify(data));
+    const inv = entity.getComponent('inventory').container;
+    for (const item of items) {
+        const itemComp = item.getComponent('item');
+        inv.addItem(itemComp.itemStack);
+        item.remove();
+    }
+    const key = new ItemStack(ITEM_KEY_ID, 1);
+    key.setLore([`ID : ${data.code}`, `Location : ${pos.x}, ${pos.y}, ${pos.z}`, `Dimension : ${dimension.id}`]);
+    player.getComponent('inventory').container.addItem(key);
 }
