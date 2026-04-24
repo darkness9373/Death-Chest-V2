@@ -59,7 +59,13 @@ function spawnEntityStorage(player, dimension, pos, data) {
         maxDistance: 6
     })
     if (items.length === 0) return;
-    itm.set(data.code, items);
+    const savedItems = [];
+    for (const item of items) {
+        const itemComp = item.getComponent('item');
+        savedItems.push(itemComp.itemStack.clone());
+        item.remove();
+    }
+    itm.set(data.code, savedItems)
     if (!dimension.isChunkLoaded(pos)) {
         dimension.runCommand(`tickingarea add circle ${pos.x} ${pos.y} ${pos.z} 1 temp_area`);
         system.runTimeout(() => {
@@ -74,9 +80,7 @@ function spawnEntityStorage(player, dimension, pos, data) {
                 entity.setDynamicProperty('data', JSON.stringify(data));
                 const inv = entity.getComponent('inventory').container;
                 for (const item of itm.get(data.code)) {
-                    const itemComp = item.getComponent('item');
-                    inv.addItem(itemComp.itemStack);
-                    item.remove();
+                    inv.addItem(item);
                 }
                 itm.delete(data.code);
             } catch (e) {
@@ -97,9 +101,7 @@ function spawnEntityStorage(player, dimension, pos, data) {
         entity.setDynamicProperty('data', JSON.stringify(data));
         const inv = entity.getComponent('inventory').container;
         for (const item of itm.get(data.code)) {
-            const itemComp = item.getComponent('item');
-            inv.addItem(itemComp.itemStack);
-            item.remove();
+            inv.addItem(item);
         }
         itm.delete(data.code);
     };
@@ -121,7 +123,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe(ev => {
         system.run(() => player.onScreenDisplay.setActionBar(`§cThis is not your death chest!`));
         return;
     }
-
+    
     if (data.locked) {
         const item = itemStack;
         if (!item || item.typeId !== ITEM_KEY_ID) {
@@ -131,7 +133,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe(ev => {
         let keyData;
         try {
             keyData = item.getDynamicProperty('id');
-        } catch (e) { }
+        } catch (e) {}
         if (!keyData || keyData !== data.code) {
             system.run(() => player.onScreenDisplay.setActionBar(`§cYou need the correct death chest key to unlock it!`));
             return;
@@ -179,7 +181,7 @@ function getData(entity) {
 function transferItems(entity, player) {
     const inv = player.getComponent('inventory').container;
     const enInv = entity.getComponent('inventory').container;
-
+    
     for (let i = 0; i < enInv.size; i++) {
         const item = enInv.getItem(i);
         if (!item) continue;
@@ -193,7 +195,7 @@ function transferItems(entity, player) {
         }
         enInv.setItem(i, undefined);
     }
-
+    
     const block = entity.dimension.getBlock(entity.location);
     entity.remove();
     block.setPermutation(BlockPermutation.resolve('minecraft:air'));
