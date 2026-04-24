@@ -1,5 +1,5 @@
 import { system, world, BlockPermutation } from "@minecraft/server";
-import { ENTITY_STORAGE_ID } from "../config";
+import { ENTITY_STORAGE_ID, ITEM_KEY_ID } from "../config";
 
 system.runInterval(() => {
     const dim = [
@@ -17,6 +17,22 @@ system.runInterval(() => {
                 block.setPermutation(BlockPermutation.resolve('minecraft:air'));
                 world.sendMessage(`§c${data.owner}'s death chest has expired and disappeared at ${entity.location.x}, ${entity.location.y}, ${entity.location.z}!`);
                 entity.remove();
+            }
+        }
+    }
+    for (const player of world.getPlayers()) {
+        const inv = player.getComponent('inventory').container;
+        for (let i = 0; i < inv.size; i++) {
+            const item = inv.getItem(i);
+            if (!item || item.typeId !== ITEM_KEY_ID) continue;
+            let keyData;
+            try {
+                keyData = JSON.parse(item.getDynamicProperty('data'));
+            } catch (e) {}
+            if (!keyData) continue;
+            if (Date.now() > keyData.expire) {
+                system.run(() => player.onScreenDisplay.setActionBar(`§cOne of your death chest keys has expired!`));
+                inv.setItem(i, undefined);
             }
         }
     }
