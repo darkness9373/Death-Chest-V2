@@ -11,23 +11,11 @@ system.runInterval(() => {
         const entities = dimension.getEntities({ type: ENTITY_STORAGE_ID });
         for (const entity of entities) {
             const data = JSON.parse(entity.getDynamicProperty('data'));
-            entity.nameTag = `${data.owner}'s\n${formatTime(Math.max(0, Math.floor((data.expire - Date.now()) / 1000)))}`;
+            entity.nameTag = `${data.owner}'s\n[§b${formatTime(Math.max(0, Math.floor((data.expire - Date.now()) / 1000)))}§r]`;
             if (Date.now() > data.expire) {
                 const block = dimension.getBlock(entity.location);
                 block.setPermutation(BlockPermutation.resolve('minecraft:air'));
-                entity.remove();
-            }
-            let hasItem = false;
-            const container = entity.getComponent('minecraft:inventory').container;
-            for (let i = 0; i < container.size; i++) {
-                const item = container.getItem(i);
-                if (!item) continue;
-                hasItem = true;
-                break;
-            }
-            if (!hasItem) {
-                const block = dimension.getBlock(entity.location);
-                block.setPermutation(BlockPermutation.resolve('minecraft:air'));
+                world.sendMessage(`§c${data.owner}'s death chest has expired and disappeared at ${entity.location.x}, ${entity.location.y}, ${entity.location.z}!`);
                 entity.remove();
             }
         }
