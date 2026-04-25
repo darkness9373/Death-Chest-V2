@@ -68,7 +68,7 @@ function spawnEntityStorage(player, dimension, pos, data) {
     itm.set(data.code, savedItems);
     const key = new ItemStack(ITEM_KEY_ID, 1);
     key.setLore([`ID : ${data.code}`, `Location : ${pos.x}, ${pos.y}, ${pos.z}`, `Dimension : ${dimension.id}`]);
-    key.setDynamicProperty('data', data);
+    key.setDynamicProperty('data', JSON.stringify(data));
     player.getComponent('inventory').container.addItem(key);
     if (!dimension.isChunkLoaded(pos)) {
         dimension.runCommand(`tickingarea add circle ${pos.x} ${pos.y} ${pos.z} 1 temp_area`);
